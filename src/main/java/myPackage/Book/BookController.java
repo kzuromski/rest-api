@@ -4,8 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.servlet.ModelAndView;
 
 @Controller
 public class BookController
@@ -14,25 +13,35 @@ public class BookController
     private BookService bookService;
 
     @RequestMapping("/books")
-    public List<Book> getAllBooks()
+    public ModelAndView getAllBooks(Model model)
     {
-        return bookService.getAllBooks();
+        ModelAndView modelAndView = new ModelAndView("books");
+        modelAndView.addObject("books", bookService.getAllBooks());
+        return modelAndView;
     }
 
     @RequestMapping("/books/{id}")
-    public String getBook(@PathVariable int id, Model model)
+    public ModelAndView getBook(@PathVariable int id)
     {
-        Book getBook = bookService.getBook(id);
-        model.addAttribute("id", getBook.getId());
-        model.addAttribute("title", getBook.getTitle());
-        model.addAttribute("description", getBook.getDescription());
-        return "books";
+        ModelAndView modelAndView = new ModelAndView("books");
+        modelAndView.addObject("books", bookService.getBook(id));
+        return modelAndView;
     }
 
-    @RequestMapping(method = RequestMethod.POST, value = "/books")
-    public void addBook(@RequestBody Book book)
+    @RequestMapping(value = "/form", method = RequestMethod.GET)
+    public String bookForm(Model model)
     {
+        model.addAttribute("book", new Book());
+        return "form";
+    }
+
+    @RequestMapping(value = "/form", method = RequestMethod.POST)
+    public String bookSubmit(@ModelAttribute Book book, Model model)
+    {
+        model.addAttribute("book", book);
+        //String info = String.format("Book id: %d\n title: %s\n description: %s\n" );
         bookService.addBook(book);
+        return "result";
     }
 
     @RequestMapping(method = RequestMethod.PUT, value = "/books/{id}")
